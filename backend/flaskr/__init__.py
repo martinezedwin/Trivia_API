@@ -16,17 +16,32 @@ def create_app(test_config=None):
   '''
   @TODO: Set up CORS. Allow '*' for origins. Delete the sample route after completing the TODOs
   '''
+  cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
 
   '''
   @TODO: Use the after_request decorator to set Access-Control-Allow
   '''
-
+  @app.after_request
+  def after_request(response):
+    response.headers.add('Access-Control-Allow-Headers', 'Content-Type, Authorization, true')
+    response.headers.add('Access-Control-Allow-Methods', 'GET, PUT, POST, DELETE, OPTIONS')
+    return response
   '''
   @TODO: 
   Create an endpoint to handle GET requests 
   for all available categories.
   '''
+  @app.route('/categories')
+  def get_categories():
+    categories = Category.query.order_by(Category.type).all()
+    
+    if len(categories) == 0:
+      abort(404)
 
+    return jsonify({
+      'success': True,
+      'categories': {category.id: category.type for category in categories}
+      })
 
   '''
   @TODO: 
@@ -40,6 +55,30 @@ def create_app(test_config=None):
   ten questions per page and pagination at the bottom of the screen for three pages.
   Clicking on the page numbers should update the questions. 
   '''
+  @app.route('/questions')
+  def get_questions():
+    page = request.args.get('page', 1, type=int)
+    category = request.args.get('category', 1, type=int)
+
+    all_questions = Question.query.order_by(Question.id).all()
+    questions_specified_category = Question.query.filter(Question.category==category).all()
+    categories = Category.query.order_by(Category.type).all()
+
+    questions = questions_specified_category
+
+    start = (page-1) * QUESTIONS_PER_PAGE
+    end = start + 10
+
+    if len(questions) == 0:
+      abort(404)
+
+    return jsonify({
+      'success': True,
+      'questions': {question.id: question.question for question in questions[start:end]},
+      'total_questions':len(questions),
+      'current_category':categories.,
+      'categories': {category.id: category.type for category in categories}
+      })
 
   '''
   @TODO: 
