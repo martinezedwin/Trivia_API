@@ -69,12 +69,14 @@ def create_app(test_config=None):
     start = (page-1) * QUESTIONS_PER_PAGE
     end = start + 10
 
-    if len(all_questions) == 0:
+    questions = [question.format() for question in all_questions[start:end]]
+
+    if len(questions) == 0:
       abort(404)
 
     return jsonify({
       'success': True,
-      'questions': [question.format() for question in all_questions[start:end]],
+      'questions': questions,
       'total_questions': len(all_questions),
       'categories': {category.id: category.type for category in categories},
       'current_category': None
@@ -146,16 +148,20 @@ def create_app(test_config=None):
   def search_question():
     body = request.get_json()
     search_term = body.get('searchTerm')
+    #search_term = request.args.get('searchTerm', type=str)
 
     if search_term:
       results = Question.query.filter(Question.question.like(f'%{search_term}%')).all()
 
-      return jsonify({
-        'success': True,
-        'qustions': [question.format() for question in results],
-        'total_questions': len(results),
-        'current_category': None
-        })
+      if len(results) > 0:
+        return jsonify({
+          'success': True,
+          'qustions': [question.format() for question in results],
+          'total_questions': len(results),
+          'current_category': None
+          })
+      else:
+        abort(404)
     else:
       abort(404)
 
@@ -169,26 +175,27 @@ def create_app(test_config=None):
   '''
   @app.route('/questions/<int:category_id>')
   def get_questions_category(category_id):
-    #page = request.args.get('page', 1, type=int)
+    page = request.args.get('page', 1, type=int)
     #category = request.args.get('category', 1, type=int)
 
     questions_specified_category = Question.query.filter(Question.category==category_id).all()
     #categories = Category.query.order_by(Category.type).all()
     category_selected = Category.query.filter(Category.id == category_id).first()
 
-    questions = questions_specified_category
-
+  
     start = (page-1) * QUESTIONS_PER_PAGE
     end = start + 10
+
+    questions = [question.format() for question in questions_specified_category[start:end]]
 
     if len(questions) == 0:
       abort(404)
 
     return jsonify({
       'success': True,
-      'questions': {question.id: question.question for question in questions[start:end]},
+      'questions': questions,
       'total_questions':len(questions),
-      'current_category':category_selected.type
+      'current_category':category_selected.id
       })
 
   '''
