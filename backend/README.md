@@ -88,6 +88,69 @@ GET '/categories'
 '6' : "Sports"}
 
 ```
+Endpoints
+#### GET '/categories'
+- Fetches a dictionary of categories in which the keys are the ids and the value is the corresponding string of the category
+- Request Arguments: None
+- Returns: An object with a single key, categories, that contains a object of id: category_string key:value pairs. 
+{'1' : "Science",
+'2' : "Art",
+'3' : "Geography",
+'4' : "History",
+'5' : "Entertainment",
+'6' : "Sports"}
+
+#### GET '/questions'
+-Fetches the list of all questions
+-Request Arguments: None
+-Returns: Number of total questions, list of categories, List of total questions in format:
+[{'id':
+'question':
+'answer':
+'category':
+'difficulty':
+}]
+
+#### POST '/questions'
+-Adds a question to the pool of questions
+-Request Arguments:Takes in the string of the questions, the string of answer, the value of category it falls under, the value of how difficult the questions is.
+-Returns:The new question ID
+#### POST '/questions/search'
+-Fetches questions that include the search term in them.
+-Request Arguments:searchTerm by which to search each question.
+-Returns:A list of questions that contain the searchTerm in format:
+[{'id':
+'question':
+'answer':
+'category':
+'difficulty':
+}]
+#### GET '/questions/<int:category_id>'
+-Fetches only the questions by a given category.
+-Request Arguments:Category ID
+-Returns:A list of questions that fall only udner the chosen category in format:
+[{'id':
+'question':
+'answer':
+'category':
+'difficulty':
+}]
+#### DELETE '/questions/<question_id>'
+-Deletes a question
+-Request Arguments: id of the questions that wants to be deleted
+-Returns: ID of deleted question
+#### POST '/quizzes'
+-Fetches random questions within category selected that has not been seen before
+-Request Arguments: quiz_category from available categories or ALL, previous_questions that have been displayed before.
+-Returns:Random question based on category selected that has not been seen before in format:
+{'id':
+'question':
+'answer':
+'category':
+'difficulty':
+}
+
+
 
 
 ## Testing

@@ -148,16 +148,26 @@ def create_app(test_config=None):
   def search_question():
     body = request.get_json()
     search_term = body.get('searchTerm')
-    #search_term = request.args.get('searchTerm', type=str)
+    page = request.args.get('page', 1, type=int)
+
+    categories = Category.query.order_by(Category.type).all()
+
+    print(search_term)
+
+    start = (page-1) * QUESTIONS_PER_PAGE
+    end = start + 10
 
     if search_term:
-      results = Question.query.filter(Question.question.like(f'%{search_term}%')).all()
-
+      #results = Question.query.filter(Question.question.like(f'%{search_term}%')).all()
+      results = Question.query.filter(Question.question.ilike('%{}%'.format(search_term))).all()
+      print(results)
+      questions = [question.format() for question in results[start:end]]
+      print(questions)
       if len(results) > 0:
         return jsonify({
           'success': True,
-          'qustions': [question.format() for question in results],
-          'total_questions': len(results),
+          'questions': questions,
+          'total_questions': len(questions),
           'current_category': None
           })
       else:
@@ -253,6 +263,22 @@ def create_app(test_config=None):
           "error": 422,
           "message": "unprocessable"
       }), 422
+
+  @app.errorhandler(400)
+  def bad_request(error):
+      return jsonify({
+          "success": False,
+          "error": 400,
+          "message": "bad request"
+      }), 400
+
+  @app.errorhandler(500)
+  def bad_request(error):
+      return jsonify({
+          "success": False,
+          "error": 500,
+          "message": "server error"
+      }), 500
 
   return app
 
