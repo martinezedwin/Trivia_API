@@ -152,7 +152,7 @@ def create_app(test_config=None):
 
     categories = Category.query.order_by(Category.type).all()
 
-    print(search_term)
+    #print(search_term)
 
     start = (page-1) * QUESTIONS_PER_PAGE
     end = start + 10
@@ -160,9 +160,9 @@ def create_app(test_config=None):
     if search_term:
       #results = Question.query.filter(Question.question.like(f'%{search_term}%')).all()
       results = Question.query.filter(Question.question.ilike('%{}%'.format(search_term))).all()
-      print(results)
+      #print(results)
       questions = [question.format() for question in results[start:end]]
-      print(questions)
+      #print(questions)
       if len(results) > 0:
         return jsonify({
           'success': True,
@@ -221,28 +221,41 @@ def create_app(test_config=None):
   '''
   @app.route('/quizzes', methods=['POST'])
   def play_quiz():
+    body = request.get_json() 
+    category = body.get('quiz_category')
+    previous_questions = body.get('previous_questions')
+    #print(category)
+    #print(previous_questions)
 
-      try:
-        body = request.get_json()
-        if not ('quiz_category' in body and 'previous_questions' in body):
-          abort(422)
+    #if player selected ALL category
+    if category['id'] == 0:
+      question_pool = Question.query.all()
 
-        category = body.get('quiz_category')
-        previous_questions = body.get('previous_questions')
+      #remove all previous questions from question_pool
+      for q_id in previous_questions:
+        for question in question_pool:
+          if question.id == q_id:
+            question_pool.remove(question)
 
-        if category['type'] == 'click':
-          available_questions = Question.query.filter(Question.id.notin_((previous_questions))).all()
-        else:
-          available_questions = Question.query.filter_by(category=category['id']).filter(Question.id.notin_((previous_questions))).all()
+      #select question at random question only from new question batch
+      random_question = random.choice(question_pool)
+    else:
+      question_pool = Question.query.filter(Question.category == category['id']).all()
+      #remove all previous questions from question_pool
+      for q_id in previous_questions:
+        for question in question_pool:
+          if question.id == q_id:
+            question_pool.remove(question)
 
-        new_question = available_questions[random.randrange(0, len(available_questions))].format() if len(available_questions) > 0 else None
+      #select question at random question only from new question batch
+      random_question = random.choice(question_pool)
 
-        return jsonify({
-          'success': True,
-          'question': new_question
-          })
-      except:
-        abort(422)
+    #print(random_question)
+    return jsonify({
+      'success': True,
+      'question': random_question.format()
+      })
+
   '''
   @TODO: 
   Create error handlers for all expected errors 
