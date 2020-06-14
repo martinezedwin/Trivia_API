@@ -3,6 +3,9 @@ __pycache__
 venv
 env
 
+#because these files make the folder too large
+/frontend/node_modules
+
 # OS generated files #
 ######################
 .DS_Store
